@@ -46,18 +46,21 @@ def get_cfg_from_args(args):
     return cfg
 
 
-def default_setup(args):
-    distributed.enable(overwrite=True)
-    seed = getattr(args, "seed", 0)
+def default_setup(cfg):
+    is_distributed = getattr(cfg.train, "is_distributed", True)
+    if is_distributed:
+        distributed.enable(overwrite=True)
+        
+    seed = getattr(cfg.train, "seed", 42)
     rank = distributed.get_global_rank()
 
     global logger
-    setup_logging(output=args.output_dir, level=logging.INFO)
+    setup_logging(output=cfg.train.output_dir, level=logging.INFO)
     logger = logging.getLogger("dinov2")
 
     utils.fix_random_seeds(seed + rank)
     logger.info("git:\n  {}\n".format(utils.get_sha()))
-    logger.info("\n".join("%s: %s" % (k, str(v)) for k, v in sorted(dict(vars(args)).items())))
+    logger.info("\n".join("%s: %s" % (k, str(v)) for k, v in sorted(dict(vars(cfg)).items())))
 
 
 def setup(args):
@@ -66,7 +69,7 @@ def setup(args):
     """
     cfg = get_cfg_from_args(args)
     os.makedirs(args.output_dir, exist_ok=True)
-    default_setup(args)
+    default_setup(cfg)
     apply_scaling_rules_to_cfg(cfg)
     write_config(cfg, args.output_dir)
     return cfg

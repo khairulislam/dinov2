@@ -6,7 +6,7 @@
 import argparse
 from typing import Any, List, Optional, Tuple
 
-import torch
+import torch, os
 import torch.backends.cudnn as cudnn
 
 from dinov2.models import build_model_from_cfg
@@ -69,6 +69,9 @@ def build_model_for_eval(config, pretrained_weights):
 
 def setup_and_build_model(args) -> Tuple[Any, torch.dtype]:
     cudnn.benchmark = True
+    # returns SLURM_NTASKS not found error for the multimodal training
+    if os.environ.get("SLURM_NTASKS") is None:
+        os.environ["SLURM_NTASKS"] = "1"
     config = setup(args)
     model = build_model_for_eval(config, args.pretrained_weights)
     autocast_dtype = get_autocast_dtype(config)
