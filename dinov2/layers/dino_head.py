@@ -35,6 +35,9 @@ class DINOHead(nn.Module):
 
     def forward(self, x):
         self.mlp.to(x, non_blocking=True)
+        # input is float16, but last layer is float32. so cast to float16
+        self.last_layer.to(x, non_blocking=True)
+        
         x = self.mlp(x)
         eps = 1e-6 if x.dtype == torch.float16 else 1e-12
         x = nn.functional.normalize(x, dim=-1, p=2, eps=eps)
