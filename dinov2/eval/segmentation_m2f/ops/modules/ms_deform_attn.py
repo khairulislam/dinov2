@@ -10,13 +10,13 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 from torch.autograd import Function
-from torch.cuda.amp import custom_fwd
+from torch.amp import custom_fwd
 from torch.nn.init import constant_, xavier_uniform_
 
 
 class MSDeformAttnFunction(Function):
     @staticmethod
-    @custom_fwd(cast_inputs=torch.float32)
+    @custom_fwd(device_type="cuda", cast_inputs=torch.float32)
     def forward(
         ctx, value, value_spatial_shapes, value_level_start_index, sampling_locations, attention_weights, im2col_step
     ):
