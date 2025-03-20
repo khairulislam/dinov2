@@ -48,7 +48,9 @@ def get_cfg_from_args(args):
 
 def default_setup(cfg):
     is_distributed = getattr(cfg.train, "is_distributed", True)
-    if is_distributed:
+    
+    # distributed but not on windows
+    if is_distributed and os.name != 'nt' :
         distributed.enable(overwrite=True)
         
     seed = getattr(cfg.train, "seed", 42)
