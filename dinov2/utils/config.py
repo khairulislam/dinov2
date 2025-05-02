@@ -50,7 +50,7 @@ def default_setup(cfg):
     is_distributed = getattr(cfg.train, "is_distributed", True)
     
     # distributed but not on windows
-    if is_distributed and os.name != 'nt' and not dist.is_initialized():
+    if is_distributed and os.name != 'nt' and not distributed.is_enabled():
         distributed.enable(overwrite=True)
         
     seed = getattr(cfg.train, "seed", 42)
