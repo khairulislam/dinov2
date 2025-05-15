@@ -63,11 +63,10 @@ def is_sharded_fsdp(x):
 
 
 def free_if_fsdp(x):
+    # https://github.com/facebookresearch/audiocraft/pull/454
     if is_sharded_fsdp(x) and x._has_params:
-        handles = x._handles
-        true_list = [True for h in handles]
-        _reshard(x, handles, true_list)
-
+        handle = x._handle
+        _reshard(x, handle, True)
 
 def get_fsdp_modules(x):
     return FSDP.fsdp_modules(x)

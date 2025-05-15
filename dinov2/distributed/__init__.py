@@ -163,9 +163,11 @@ class _TorchDistributedEnvironment:
         env_vars = _collect_env_vars()
         if not env_vars:
             # Environment is not set
+            print('No distributed env var found')
             pass
         elif len(env_vars) == len(_TORCH_DISTRIBUTED_ENV_VARS):
             # Environment is fully set
+            print('Found full set of distributed env vars')
             return self._set_from_preset_env()
         else:
             # Environment is partially set
@@ -173,13 +175,14 @@ class _TorchDistributedEnvironment:
             raise RuntimeError(f"Partially set environment: {collected_env_vars}")
 
         if torch.cuda.device_count() > 0:
+            print(f'Found {torch.cuda.device_count()} cuda devices. Setting from local.')
             return self._set_from_local()
 
         raise RuntimeError("Can't initialize PyTorch distributed environment")
 
     # Slurm job created with sbatch, submitit, etc...
     def _set_from_slurm_env(self):
-        # logger.info("Initialization from Slurm environment")
+        print("Initialization from Slurm environment")
         job_id = int(os.environ["SLURM_JOB_ID"])
         node_count = int(os.environ["SLURM_JOB_NUM_NODES"])
         nodes = _parse_slurm_node_list(os.environ["SLURM_JOB_NODELIST"])
@@ -193,6 +196,7 @@ class _TorchDistributedEnvironment:
         self.local_rank = int(os.environ["SLURM_LOCALID"])
         self.local_world_size = self.world_size // node_count
         assert self.local_rank < self.local_world_size
+        print(f"rank: {self.rank}, world_size: {self.world_size}, local_rank: {self.local_rank}, local_world_size: {self.local_world_size}")
 
     # Single node job with preset environment (i.e. torchrun)
     def _set_from_preset_env(self):
@@ -244,7 +248,7 @@ def enable(*, set_cuda_current_device: bool = True, overwrite: bool = False, all
             current PyTorch CUDA device to the one matching the local rank.
         overwrite: If True, overwrites already set variables. Else fails.
     """
-
+    print('Enabling distributed mode')
     global _LOCAL_RANK, _LOCAL_WORLD_SIZE
     if _LOCAL_RANK >= 0 or _LOCAL_WORLD_SIZE >= 0:
         raise RuntimeError("Distributed mode has already been enabled")
