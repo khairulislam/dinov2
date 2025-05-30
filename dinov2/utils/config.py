@@ -47,7 +47,7 @@ def get_cfg_from_args(args):
 
 
 def default_setup(cfg, enable_dist: bool = True):
-    if enable_dist:
+    if enable_dist and not distributed.is_enabled():
         distributed.enable(overwrite=True)
         
     seed = getattr(cfg.train, "seed", 42)
